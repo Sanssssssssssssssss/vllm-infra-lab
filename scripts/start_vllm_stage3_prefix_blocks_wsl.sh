@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+WORKSPACE_DIR="${1:-/mnt/e/GPTProject2/vLLM}"
+LOG_PATH="${STAGE3_VLLM_LOG_PATH:-${WORKSPACE_DIR}/logs/vllm_stage3_prefix_blocks.log}"
+
+mkdir -p "$(dirname "${LOG_PATH}")"
+cd "${WORKSPACE_DIR}"
+
+export VLLM_MAX_MODEL_LEN="${VLLM_MAX_MODEL_LEN:-4096}"
+export VLLM_MAX_NUM_SEQS="${VLLM_MAX_NUM_SEQS:-2}"
+export VLLM_MAX_NUM_BATCHED_TOKENS="${VLLM_MAX_NUM_BATCHED_TOKENS:-4096}"
+export VLLM_GPU_MEMORY_UTILIZATION="${VLLM_GPU_MEMORY_UTILIZATION:-0.80}"
+export VLLM_ENABLE_PREFIX_CACHING="${VLLM_ENABLE_PREFIX_CACHING:-1}"
+export VLLM_ENABLE_CHUNKED_PREFILL="${VLLM_ENABLE_CHUNKED_PREFILL:-1}"
+export VLLM_ASYNC_SCHEDULING="${VLLM_ASYNC_SCHEDULING:-1}"
+export VLLM_BLOCK_SIZE="${VLLM_BLOCK_SIZE:-16}"
+
+exec >"${LOG_PATH}" 2>&1
+
+echo "Starting Stage 3 vLLM prefix-block profile"
+echo "  workspace=${WORKSPACE_DIR}"
+echo "  log=${LOG_PATH}"
+echo "  VLLM_MAX_MODEL_LEN=${VLLM_MAX_MODEL_LEN}"
+echo "  VLLM_MAX_NUM_SEQS=${VLLM_MAX_NUM_SEQS}"
+echo "  VLLM_MAX_NUM_BATCHED_TOKENS=${VLLM_MAX_NUM_BATCHED_TOKENS}"
+echo "  VLLM_GPU_MEMORY_UTILIZATION=${VLLM_GPU_MEMORY_UTILIZATION}"
+echo "  VLLM_BLOCK_SIZE=${VLLM_BLOCK_SIZE}"
+
+exec bash scripts/start_vllm_gguf_optimized_wsl.sh "${WORKSPACE_DIR}"
+

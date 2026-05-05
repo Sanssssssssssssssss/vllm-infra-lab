@@ -76,6 +76,36 @@ python ./scripts/profile_vllm_memory_sweep.py \
 
 Only run the full 288-start matrix after the pilot produces clean CSV/JSONL rows and the machine can be left alone.
 
+## Stage 3: PagedAttention Prefix Blocks
+
+The Stage 3 contract is documented in `docs/PAGED_ATTENTION_PREFIX_CACHE.md`.
+It isolates Automatic Prefix Caching as a KV block reuse problem.
+
+Default run:
+
+```bash
+python ./scripts/bench_prefix_cache_blocks.py \
+  --request-count 10 \
+  --concurrency 1 \
+  --max-model-len 4096 \
+  --notes stage3-prefix-cache-blocks
+```
+
+Required cases:
+
+```text
+Case A: 10 requests with different 1024-token prompts
+Case B: 10 requests sharing a 1024-token system prefix
+Case C: 10 requests sharing a 2048-token document prefix
+```
+
+With `block_size=16`, the expected reusable full-block counts are 64 for Case B
+and 128 for Case C. Use `prefix_cache_hits_delta`, `prefix_cache_hit_rate`,
+`ttft_ms_p50/p95`, and `request_prefill_time_seconds_sum_delta` to decide
+whether APC is actually active. `output_tps` should be treated as a guardrail:
+it should remain roughly stable because prefix caching reduces prefill work, not
+decode work.
+
 ### Prefill
 
 Vary:

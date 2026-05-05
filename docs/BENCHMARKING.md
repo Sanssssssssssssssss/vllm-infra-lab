@@ -122,6 +122,33 @@ python ./scripts/bench_openai_async.py \
 
 Use `--notes` to explain anything unusual, such as a warm server, a changed GPU memory target, a LAN client route, or background GPU load.
 
+## Stage 3 Prefix-Cache Blocks
+
+PagedAttention / APC experiments use a dedicated runner:
+
+```bash
+python ./scripts/bench_prefix_cache_blocks.py \
+  --request-count 10 \
+  --concurrency 1 \
+  --max-model-len 4096 \
+  --notes stage3-prefix-cache-blocks
+```
+
+It writes:
+
+- `reports/benchmarks/YYYY-MM-DD-vllm-prefix-cache-blocks.csv`
+- `reports/benchmarks/YYYY-MM-DD-vllm-prefix-cache-blocks.jsonl`
+
+The default cases are:
+
+| case | shared prefix | purpose |
+| --- | ---: | --- |
+| `case_a_distinct_1024` | none | Different-prompt control. |
+| `case_b_shared_system_1024` | 1024 tokens | System-prefix APC. |
+| `case_c_shared_document_2048` | 2048 tokens | Long-document APC. |
+
+This runner records `expected_shared_blocks`, `/metrics` prefix-cache query/hit deltas, and server-side prefill/decode metric deltas when vLLM exposes them. See `docs/PAGED_ATTENTION_PREFIX_CACHE.md` for the full contract.
+
 ## First Recorded Matrix
 
 The first recorded matrix is:
