@@ -176,3 +176,14 @@ For the next vLLM-focused optimization track, use the already downloaded `Qwen3-
 - The previous fp16 safetensors baseline required CPU offload and `--enforce-eager`, which made it a poor starting point for studying prefill scheduling, KV cache behavior, CUDA graph, and continuous batching.
 - The local GGUF model fits the 8 GB laptop GPU much better and lets vLLM run without CPU weight offload.
 - This route keeps the work inside `WSL2 + vLLM`, matching the user's AI infra learning goal, while still using a model artifact already present on disk.
+
+## ADR-017 Benchmark Artifacts Are Required Before Further Tuning
+状态：Accepted
+
+决策：
+All future inference tuning should use the standard OpenAI-compatible benchmark runner and persist CSV/JSONL artifacts under `reports/benchmarks/`. Each completed round must be pushed to the GitHub repository before moving to the next tuning step.
+
+原因：
+- Smoke tests and manual log watching are insufficient for comparing prefill, KV cache, continuous batching, and prefix caching changes.
+- TTFT, ITL, aggregate TPS, E2E latency, GPU memory, and error counts need stable schemas so results can be compared across runs.
+- Keeping benchmark rules in the repository makes the learning trail auditable and reproducible.

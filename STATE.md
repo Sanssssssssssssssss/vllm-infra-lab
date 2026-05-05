@@ -70,3 +70,10 @@
 - Current working `gpu_memory_utilization` is `0.80`; `0.86` failed at startup because WSL free VRAM was slightly below the requested allocation.
 - Startup logs reported about `4.82 GiB` model memory, about `1.13 GiB` available KV cache memory, `8,224` GPU KV cache tokens, and about `4.02x` maximum concurrency at `2048` tokens per request.
 - A 4-request local concurrency smoke test completed successfully; this is not yet a formal benchmark.
+
+## 2026-05-05 Benchmarking Update
+- Added `scripts/bench_openai_async.py` as the standard OpenAI-compatible streaming benchmark runner.
+- Added `docs/BENCHMARKING.md` and `docs/EXPERIMENTS.md` as the required benchmark and experiment loop contract.
+- Future tuning rounds must record benchmark CSV/JSONL artifacts and push each completed round to the GitHub repository before continuing.
+- Ran the first required `vllm + gguf-q4_k_m` matrix with `short_chat`, `long_prefill`, `long_decode`, and `shared_prefix` at concurrency `1,2,4,8`.
+- Results are stored in `reports/benchmarks/2026-05-05-vllm-gguf-matrix.csv` and `.jsonl`; all 16 matrix rows completed with `error_count=0`.

@@ -1,0 +1,142 @@
+# Experiments
+
+This file is the experiment contract for the local inference lab. It keeps tuning work from drifting into undocumented one-off changes.
+
+## Current Baseline
+
+The active vLLM optimization baseline is:
+
+- Backend: `vllm`
+- Route: `WSL`
+- Profile: `qwen3_8b_gguf_vllm_optimized`
+- Model: `Qwen3-8B-GGUF-vLLM-local`
+- Quantization: `gguf-q4_k_m`
+- `max_model_len=2048`
+- `max_num_seqs=8`
+- `max_num_batched_tokens=4096`
+- `gpu_memory_utilization=0.80`
+- `block_size=16`
+- Prefix caching: on
+- Chunked prefill: on
+- Async scheduling: on
+- Enforce eager: off
+- Streaming benchmark: on
+
+## Experiment Loop
+
+1. Change one parameter family at a time.
+2. Start or restart the backend with the exact intended profile.
+3. Run the required benchmark matrix from `docs/BENCHMARKING.md`.
+4. Record CSV and JSONL artifacts under `reports/benchmarks/`.
+5. Update notes when the run is not clean.
+6. Commit and push the benchmark script, docs, and result artifacts before continuing.
+
+## First Matrix
+
+The first required matrix is:
+
+```text
+workloads = short_chat, long_prefill, long_decode, shared_prefix
+concurrency = 1, 2, 4, 8
+waves = 1 or higher
+request_rate = 0 for burst unless testing arrival shaping
+```
+
+This matrix is enough to separate the first-order effects:
+
+- `short_chat`: basic interactive behavior.
+- `long_prefill`: prefill pressure and TTFT.
+- `long_decode`: decode pressure and ITL.
+- `shared_prefix`: automatic prefix caching.
+
+## Planned Axes
+
+### Prefill
+
+Vary:
+
+```text
+max_num_batched_tokens = 2048, 4096, 8192
+chunked_prefill_enabled = true, false
+```
+
+Watch:
+
+- TTFT p50/p95
+- E2E p50/p95
+- error_count
+- GPU memory after long-prefill rows
+
+### Continuous Batching
+
+Vary:
+
+```text
+max_num_seqs = 1, 2, 4, 8
+concurrency = 1, 2, 4, 8
+```
+
+Watch:
+
+- aggregate output_tps
+- E2E p95 under concurrency
+- queueing symptoms through TTFT p95
+- error_count
+
+### KV Cache
+
+Vary:
+
+```text
+max_model_len = 1024, 2048, 4096
+block_size = 16, 32
+kv_cache_dtype = auto, fp8_e5m2
+```
+
+Watch:
+
+- available KV capacity from vLLM startup logs
+- long context success/failure boundary
+- output quality when fp8 KV cache is used
+- OOM and preemption-like errors
+
+### Prefix Caching
+
+Vary:
+
+```text
+prefix_caching_enabled = true, false
+prefix_caching_hash_algo = sha256, xxhash
+```
+
+Watch:
+
+- shared_prefix TTFT p50/p95
+- prefix cache hit rate from vLLM metrics/logs
+- CPU overhead if hash algorithm becomes visible at high request volume
+
+### CUDA Graph / Eager Control
+
+Vary:
+
+```text
+enforce_eager = false, true
+```
+
+Watch:
+
+- ITL p50/p95
+- startup time
+- memory headroom
+- compatibility failures
+
+## Result Interpretation
+
+Prefer configurations that improve the workload they target without causing p95 latency spikes or new errors elsewhere. A higher aggregate TPS is not automatically better if TTFT p95 or error_count gets worse for interactive workloads.
+
+For this laptop, a configuration is considered unstable if it:
+
+- requires lowering Windows/WSL background GPU usage by hand to start,
+- produces OOM or timeout in any required row,
+- leaves less than a small practical VRAM margin after startup,
+- improves one workload only by severely degrading another required workload.

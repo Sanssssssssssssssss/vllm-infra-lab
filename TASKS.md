@@ -9,7 +9,7 @@
 - [ ] 用管理员 PowerShell 配置 Windows portproxy 与防火墙规则
 - [ ] 验证另一台电脑的真实局域网调用链路
 - [ ] 评估关闭 thinking 模式是否应作为 agent 默认配置
-- [ ] 为 vLLM GGUF 优化路线建立 benchmark 表格与请求压测脚本
+- [x] 为 vLLM GGUF 优化路线建立 benchmark 表格与请求压测脚本
 - [ ] 系统比较 prefill / KV cache / continuous batching / automatic prefix caching 参数矩阵
 
 ## 进行中 In Progress
@@ -61,5 +61,6 @@
 - [x] Start `Qwen3-8B-GGUF Q4_K_M` through vLLM on port `8000`
 - [x] Validate OpenAI-compatible chat against `Qwen3-8B-GGUF-vLLM-local`
 - [x] Capture initial startup facts for prefix caching, chunked prefill, KV cache capacity, continuous batching, and CUDA graph
-- [ ] Add a repeatable concurrency benchmark harness
+- [x] Add a repeatable concurrency benchmark harness
+- [x] Run the first required workload/concurrency benchmark matrix and persist CSV/JSONL artifacts
 - [ ] Compare warm-prefix and cold-prefix request behavior
