@@ -11,6 +11,7 @@
 - [ ] 评估关闭 thinking 模式是否应作为 agent 默认配置
 - [x] 为 vLLM GGUF 优化路线建立 benchmark 表格与请求压测脚本
 - [ ] 系统比较 prefill / KV cache / continuous batching / automatic prefix caching 参数矩阵
+- [ ] 运行完整 Stage 2 显存/KV cache 288-start sweep
 
 ## 进行中 In Progress
 - [ ] 收敛首版局域网暴露方案（WSL portproxy + firewall）
@@ -63,4 +64,6 @@
 - [x] Capture initial startup facts for prefix caching, chunked prefill, KV cache capacity, continuous batching, and CUDA graph
 - [x] Add a repeatable concurrency benchmark harness
 - [x] Run the first required workload/concurrency benchmark matrix and persist CSV/JSONL artifacts
+- [x] Add startup-level vLLM memory/KV cache profiler
+- [x] Run Stage 2 memory profiling pilot and persist CSV/JSONL artifacts
 - [ ] Compare warm-prefix and cold-prefix request behavior

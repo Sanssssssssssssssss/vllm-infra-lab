@@ -19,12 +19,14 @@ Start here:
 - Read [docs/VLLM_OPTIMIZATION.md](E:\GPTProject2\vLLM\docs\VLLM_OPTIMIZATION.md) for the optimized WSL + vLLM GGUF path
 - Read [docs/BENCHMARKING.md](E:\GPTProject2\vLLM\docs\BENCHMARKING.md) for the benchmark runner and required metrics
 - Read [docs/EXPERIMENTS.md](E:\GPTProject2\vLLM\docs\EXPERIMENTS.md) for the experiment loop and tuning matrix
+- Read [docs/MEMORY_MODEL.md](E:\GPTProject2\vLLM\docs\MEMORY_MODEL.md) for the Stage 2 VRAM and KV cache profiling plan
 - Read [reports/2026-05-05-vllm-gguf-optimization.md](E:\GPTProject2\vLLM\reports\2026-05-05-vllm-gguf-optimization.md) for the first vLLM GGUF optimization report
 - List profiles with [scripts/list_profiles.ps1](E:\GPTProject2\vLLM\scripts\list_profiles.ps1)
 - Switch the active profile with [scripts/set_active_profile.ps1](E:\GPTProject2\vLLM\scripts\set_active_profile.ps1)
 - Start the optimized vLLM GGUF route with [scripts/start_vllm_gguf_optimized_wsl.ps1](E:\GPTProject2\vLLM\scripts\start_vllm_gguf_optimized_wsl.ps1)
 - Ask the optimized vLLM GGUF route with [scripts/ask_vllm_gguf_optimized_wsl.sh](E:\GPTProject2\vLLM\scripts\ask_vllm_gguf_optimized_wsl.sh)
 - Run OpenAI-compatible async benchmarks with [scripts/bench_openai_async.py](E:\GPTProject2\vLLM\scripts\bench_openai_async.py)
+- Profile vLLM startup memory and KV cache capacity with [scripts/profile_vllm_memory_sweep.py](E:\GPTProject2\vLLM\scripts\profile_vllm_memory_sweep.py)
 - Bootstrap `llama.cpp` with [scripts/bootstrap_llamacpp_windows.ps1](E:\GPTProject2\vLLM\scripts\bootstrap_llamacpp_windows.ps1)
 - Download the active GGUF model with [scripts/download_active_model_windows.ps1](E:\GPTProject2\vLLM\scripts\download_active_model_windows.ps1)
 - Start `llama.cpp` with [scripts/start_llamacpp_windows.ps1](E:\GPTProject2\vLLM\scripts\start_llamacpp_windows.ps1)

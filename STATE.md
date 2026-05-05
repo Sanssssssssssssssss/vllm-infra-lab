@@ -77,3 +77,11 @@
 - Future tuning rounds must record benchmark CSV/JSONL artifacts and push each completed round to the GitHub repository before continuing.
 - Ran the first required `vllm + gguf-q4_k_m` matrix with `short_chat`, `long_prefill`, `long_decode`, and `shared_prefix` at concurrency `1,2,4,8`.
 - Results are stored in `reports/benchmarks/2026-05-05-vllm-gguf-matrix.csv` and `.jsonl`; all 16 matrix rows completed with `error_count=0`.
+
+## 2026-05-05 Memory Profiling Update
+- Added `scripts/profile_vllm_memory_sweep.py` for startup-level vLLM memory and KV cache profiling.
+- Added `docs/MEMORY_MODEL.md` for the Stage 2 VRAM model and 288-start sweep matrix.
+- Ran the Stage 2 pilot with 4 startup configs and stored results in `reports/memory/2026-05-05-vllm-gguf-memory-profile.csv` and `.jsonl`.
+- Pilot result: all 4 configs reached `ready` with no OOM. The non-eager `2048/0.80/8/4096` row recorded about `1.19 GiB` KV cache, `8,656` GPU KV tokens, and `4.23x` max concurrency at 2048 tokens/request.
+- Pilot result: `enforce_eager=true` skipped CUDA graph capture and recorded less KV capacity in this run, about `0.61 GiB` and `4,400` GPU KV tokens.
+- After the pilot, the normal optimized vLLM service was restarted on `0.0.0.0:8000` and `/health` passed.

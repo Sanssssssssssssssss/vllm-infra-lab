@@ -51,6 +51,31 @@ This matrix is enough to separate the first-order effects:
 
 ## Planned Axes
 
+## Stage 2: Memory And KV Cache
+
+Before deeper request-level tuning, profile startup memory and KV cache capacity. The full Stage 2 matrix is documented in `docs/MEMORY_MODEL.md` and is run with:
+
+```bash
+python ./scripts/profile_vllm_memory_sweep.py \
+  --preset stage2 \
+  --confirm-large-sweep \
+  --kill-existing \
+  --notes stage2-full-memory-sweep
+```
+
+This stage records model memory, KV cache memory, derived GPU blocks, GPU KV tokens, max concurrency, CUDA graph capture, and OOM status.
+
+Run the pilot first after changing the profiler:
+
+```bash
+python ./scripts/profile_vllm_memory_sweep.py \
+  --preset pilot \
+  --kill-existing \
+  --notes stage2-memory-pilot
+```
+
+Only run the full 288-start matrix after the pilot produces clean CSV/JSONL rows and the machine can be left alone.
+
 ### Prefill
 
 Vary:

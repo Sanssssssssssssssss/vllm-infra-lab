@@ -214,3 +214,16 @@ vLLM 本地聊天服务已经启动成功。
 - GPU KV cache size 为 `8,224 tokens`
 - `2048` tokens/request 下最大并发约 `4.02x`
 - 4 个本机并发短请求已验证均返回成功；该结果只作为 continuous batching smoke test，不作为正式 benchmark
+
+### 16. Stage 2 显存 / KV cache profiling pilot
+
+```bash
+cd /mnt/e/GPTProject2/vLLM
+source ~/.venvs/gptproject2-vllm/bin/activate
+python ./scripts/profile_vllm_memory_sweep.py --preset pilot --kill-existing --notes stage2-memory-pilot
+```
+
+说明：
+- 该命令会重启 vLLM 服务
+- 启动级 profiling 结果写入 `reports/memory/*.csv` 和 `reports/memory/*.jsonl`
+- 原始启动日志写入 `logs/memory_profile/`，该目录不提交到 git
