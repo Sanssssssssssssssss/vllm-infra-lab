@@ -4,23 +4,27 @@ This file is the experiment contract for the local inference lab. It keeps tunin
 
 ## Current Baseline
 
-The active vLLM optimization baseline is:
+The active vLLM optimization baseline is now:
 
 - Backend: `vllm`
 - Route: `WSL`
-- Profile: `qwen3_8b_gguf_vllm_optimized`
-- Model: `Qwen3-8B-GGUF-vLLM-local`
-- Quantization: `gguf-q4_k_m`
+- Profile: `qwen3_8b_awq_marlin_eager_vllm`
+- Model: `Qwen3-8B-AWQ-vLLM-local`
+- Quantization: `awq-marlin-int4`
 - `max_model_len=2048`
-- `max_num_seqs=8`
+- `max_num_seqs=2`
 - `max_num_batched_tokens=4096`
-- `gpu_memory_utilization=0.80`
+- `gpu_memory_utilization=0.85`
 - `block_size=16`
 - Prefix caching: on
 - Chunked prefill: on
 - Async scheduling: on
-- Enforce eager: off
+- Enforce eager: on
 - Streaming benchmark: on
+
+The previous GGUF baseline remains available through
+`scripts/start_vllm_gguf_optimized_wsl.sh`. The quantized-model selection notes
+live in `docs/QUANTIZATION_MODELS.md`.
 
 ## Experiment Loop
 

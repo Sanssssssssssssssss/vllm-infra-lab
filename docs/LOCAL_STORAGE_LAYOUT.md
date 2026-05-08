@@ -12,6 +12,8 @@ Snapshot date: 2026-05-05.
 | --- | --- | --- |
 | WSL Ubuntu VHD | `D:\WSL\Ubuntu\ext4.vhdx` | `Ubuntu` registry `BasePath` points at `D:\WSL\Ubuntu`. |
 | vLLM workspace | `E:\GPTProject2\vLLM` | Accessed from WSL as `/mnt/e/GPTProject2/vLLM`. |
+| vLLM local models | `E:\GPTProject2\vLLM\models` | Ignored by git; contains Qwen GGUF, Qwen HF, Qwen AWQ, and Claude2-Alpaca AWQ. |
+| Hugging Face cache | `E:\GPTProject2\vLLM\hf-cache` | Ignored by git; used by local download and vLLM scripts. |
 | Ollama models | `E:\ollama` | User and machine `OLLAMA_MODELS` both point here. |
 | Ollama program files | `E:\Programs\Ollama` | Windows local-program path is a junction to this target. |
 | Ollama runtime/config | `E:\OllamaRuntime` | `.ollama` and local Ollama app-data paths are junctions to this target. |
@@ -31,9 +33,9 @@ Final verification snapshot:
 
 | Drive | Free space |
 | --- | ---: |
-| `C:` | 169 GB |
+| `C:` | 175 GB |
 | `D:` | 144 GB |
-| `E:` | 70 GB |
+| `E:` | 61 GB |
 
 WSL smoke check after the move:
 
@@ -63,6 +65,8 @@ wsl.exe --manage Ubuntu --move D:\WSL\Ubuntu
 
 - Prefer project-local benchmark artifacts under `reports/benchmarks/`; do not
   write large ad hoc logs or model caches into `%USERPROFILE%`.
+- Keep vLLM model folders under `E:\GPTProject2\vLLM\models` so scripts, docs,
+  and benchmark reports all refer to one workspace-relative layout.
 - The current WSL build rejected ordinary sparse VHD enablement and requested an
   unsafe override. Do not force `--allow-unsafe` on this machine unless we have a
   backup and a specific reason to test sparse VHD behavior.

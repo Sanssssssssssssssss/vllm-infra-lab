@@ -771,7 +771,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--temperature", type=float, default=0.0)
     parser.add_argument("--output-prefix", type=Path, default=default_output_prefix())
     parser.add_argument("--notes", default="")
-    parser.add_argument("--tokenizer-path", default="/mnt/e/GPTProject2/models/Qwen3-8B")
+    parser.add_argument("--tokenizer-path", default="/mnt/e/GPTProject2/vLLM/models/Qwen3-8B")
     parser.add_argument("--calibrate-prompts", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--max-model-len", default=os.environ.get("VLLM_MAX_MODEL_LEN", "2048"))
     parser.add_argument("--max-num-seqs", default=os.environ.get("VLLM_MAX_NUM_SEQS", "8"))

@@ -13,12 +13,14 @@ fi
 
 source "${VENV_DIR}/bin/activate"
 
-export HF_HOME="${HF_HOME:-/mnt/e/GPTProject2/hf-cache}"
+export HF_HOME="${HF_HOME:-${WORKSPACE_DIR}/hf-cache}"
 export HF_HUB_DISABLE_XET="${HF_HUB_DISABLE_XET:-1}"
 
-VLLM_MODEL="${VLLM_MODEL:-/mnt/e/GPTProject2/models/Qwen3-8B-GGUF/Qwen3-8B-Q4_K_M.gguf}"
-VLLM_TOKENIZER="${VLLM_TOKENIZER:-/mnt/e/GPTProject2/models/Qwen3-8B}"
-VLLM_HF_CONFIG_PATH="${VLLM_HF_CONFIG_PATH:-/mnt/e/GPTProject2/models/Qwen3-8B}"
+MODEL_ROOT="${VLLM_MODEL_ROOT:-${WORKSPACE_DIR}/models}"
+
+VLLM_MODEL="${VLLM_MODEL:-${MODEL_ROOT}/Qwen3-8B-GGUF/Qwen3-8B-Q4_K_M.gguf}"
+VLLM_TOKENIZER="${VLLM_TOKENIZER:-${MODEL_ROOT}/Qwen3-8B}"
+VLLM_HF_CONFIG_PATH="${VLLM_HF_CONFIG_PATH:-${MODEL_ROOT}/Qwen3-8B}"
 VLLM_SERVED_MODEL_NAME="${VLLM_SERVED_MODEL_NAME:-Qwen3-8B-GGUF-vLLM-local}"
 VLLM_HOST="${VLLM_HOST:-0.0.0.0}"
 VLLM_PORT="${VLLM_PORT:-8000}"
@@ -47,6 +49,18 @@ cmd=(
   --block-size "${VLLM_BLOCK_SIZE}"
   --generation-config "${VLLM_GENERATION_CONFIG}"
 )
+
+if [ -n "${VLLM_QUANTIZATION:-}" ]; then
+  cmd+=(--quantization "${VLLM_QUANTIZATION}")
+fi
+
+if [ -n "${VLLM_CHAT_TEMPLATE:-}" ]; then
+  cmd+=(--chat-template "${VLLM_CHAT_TEMPLATE}")
+fi
+
+if [ "${VLLM_TRUST_REMOTE_CODE:-0}" = "1" ]; then
+  cmd+=(--trust-remote-code)
+fi
 
 if [ "${VLLM_ENABLE_PREFIX_CACHING:-1}" = "1" ]; then
   cmd+=(--enable-prefix-caching)

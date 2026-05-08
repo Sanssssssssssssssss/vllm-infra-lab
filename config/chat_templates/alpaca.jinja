@@ -1,0 +1,27 @@
+{% set ns = namespace(system='') %}
+{% for message in messages %}
+{% if message['role'] == 'system' %}
+{% set ns.system = message['content'] %}
+{% endif %}
+{% endfor %}
+Below is an instruction that describes a task. Write a response that appropriately completes the request.
+{% if ns.system %}
+
+### Context:
+{{ ns.system }}
+{% endif %}
+{% for message in messages %}
+{% if message['role'] == 'user' %}
+
+### Instruction:
+{{ message['content'] }}
+{% elif message['role'] == 'assistant' %}
+
+### Response:
+{{ message['content'] }}
+{% endif %}
+{% endfor %}
+{% if add_generation_prompt %}
+
+### Response:
+{% endif %}

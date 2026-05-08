@@ -15,10 +15,10 @@ python ./scripts/bench_openai_async.py
 Default target:
 
 - Endpoint: `http://127.0.0.1:8000/v1/chat/completions`
-- Model: `Qwen3-8B-GGUF-vLLM-local`
+- Model: `Qwen3-8B-AWQ-vLLM-local`
 - Backend: `vllm`
-- Profile: `qwen3_8b_gguf_vllm_optimized`
-- Quantization: `gguf-q4_k_m`
+- Profile: `qwen3_8b_awq_marlin_eager_vllm`
+- Quantization: `awq-marlin-int4`
 - Route: `WSL`
 
 The runner writes:
@@ -104,20 +104,37 @@ TTFT and ITL require `streaming=true`. If a backend is tested without streaming,
 ## Baseline Command
 
 ```bash
+VLLM_QUANTIZATION=awq_marlin \
+VLLM_GPU_MEMORY_UTILIZATION=0.85 \
+VLLM_MAX_NUM_SEQS=2 \
+VLLM_ENFORCE_EAGER=1 \
+bash ./scripts/start_vllm_qwen3_awq_wsl.sh /mnt/e/GPTProject2/vLLM
+```
+
+Then run:
+
+```bash
 python ./scripts/bench_openai_async.py \
   --host 127.0.0.1 \
   --port 8000 \
   --api-key change-this-before-lan-use \
-  --model Qwen3-8B-GGUF-vLLM-local \
+  --model Qwen3-8B-AWQ-vLLM-local \
   --backend vllm \
-  --profile qwen3_8b_gguf_vllm_optimized \
-  --quantization gguf-q4_k_m \
+  --profile qwen3_8b_awq_marlin_eager_vllm \
+  --quantization awq-marlin-int4 \
   --route WSL \
   --workloads short_chat,long_prefill,long_decode,shared_prefix \
   --concurrency 1,2,4,8 \
   --waves 1 \
   --request-rate 0 \
-  --streaming
+  --streaming \
+  --max-model-len 2048 \
+  --max-num-seqs 2 \
+  --max-num-batched-tokens 4096 \
+  --gpu-memory-utilization 0.85 \
+  --block-size 16 \
+  --enforce-eager \
+  --tokenizer-path /mnt/e/GPTProject2/vLLM/models/Qwen3-8B-AWQ
 ```
 
 Use `--notes` to explain anything unusual, such as a warm server, a changed GPU memory target, a LAN client route, or background GPU load.

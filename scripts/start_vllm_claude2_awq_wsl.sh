@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+WORKSPACE_DIR="${1:-/mnt/e/GPTProject2/vLLM}"
+
+export VLLM_MODEL="${VLLM_MODEL:-${WORKSPACE_DIR}/models/claude2-alpaca-7B-AWQ}"
+export VLLM_TOKENIZER="${VLLM_TOKENIZER:-${VLLM_MODEL}}"
+export VLLM_HF_CONFIG_PATH="${VLLM_HF_CONFIG_PATH:-${VLLM_MODEL}}"
+export VLLM_SERVED_MODEL_NAME="${VLLM_SERVED_MODEL_NAME:-claude2-alpaca-7B-AWQ-vLLM-local}"
+export VLLM_QUANTIZATION="${VLLM_QUANTIZATION:-awq}"
+export VLLM_DTYPE="${VLLM_DTYPE:-auto}"
+export VLLM_MAX_MODEL_LEN="${VLLM_MAX_MODEL_LEN:-2048}"
+export VLLM_GPU_MEMORY_UTILIZATION="${VLLM_GPU_MEMORY_UTILIZATION:-0.80}"
+export VLLM_MAX_NUM_SEQS="${VLLM_MAX_NUM_SEQS:-8}"
+export VLLM_MAX_NUM_BATCHED_TOKENS="${VLLM_MAX_NUM_BATCHED_TOKENS:-4096}"
+export VLLM_BLOCK_SIZE="${VLLM_BLOCK_SIZE:-16}"
+export VLLM_CHAT_TEMPLATE="${VLLM_CHAT_TEMPLATE:-${WORKSPACE_DIR}/config/chat_templates/alpaca.jinja}"
+
+exec bash "${WORKSPACE_DIR}/scripts/start_vllm_gguf_optimized_wsl.sh" "${WORKSPACE_DIR}"
