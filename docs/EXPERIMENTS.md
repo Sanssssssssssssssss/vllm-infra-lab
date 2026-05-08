@@ -26,6 +26,16 @@ The previous GGUF baseline remains available through
 `scripts/start_vllm_gguf_optimized_wsl.sh`. The quantized-model selection notes
 live in `docs/QUANTIZATION_MODELS.md`.
 
+Latest boundary baseline:
+
+- `reports/2026-05-08-vllm-awq-marlin-boundary-waves5.md`
+- `reports/benchmarks/2026-05-08-vllm-awq-marlin-boundary-waves5.csv`
+- `reports/benchmarks/2026-05-08-vllm-awq-marlin-boundary-waves5.jsonl`
+
+This run completed the required four-workload matrix at concurrency `1,2,4,8`
+with `waves=5`. Stability passed, but agent-facing TTFT p95 showed the current
+interactive boundary is closer to concurrency `2`.
+
 ## Experiment Loop
 
 1. Change one parameter family at a time.

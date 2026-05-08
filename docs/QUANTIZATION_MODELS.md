@@ -75,6 +75,10 @@ reports/benchmarks/2026-05-08-vllm-gguf-vs-awq-claude2-awq.csv
 reports/2026-05-08-vllm-gguf-vs-awq.md
 ```
 
-The required next step is to rerun the full matrix at concurrency `1,2,4,8`.
-This first pass only used `1,2` so the model switch could be validated quickly
-before deeper tuning.
+The follow-up boundary baseline is recorded in:
+
+```text
+reports/2026-05-08-vllm-awq-marlin-boundary-waves5.md
+reports/benchmarks/2026-05-08-vllm-awq-marlin-boundary-waves5.csv
+reports/benchmarks/2026-05-08-vllm-awq-marlin-boundary-waves5.jsonl
+```
