@@ -72,6 +72,8 @@ fi
 
 if [ "${VLLM_ENABLE_CHUNKED_PREFILL:-1}" = "1" ]; then
   cmd+=(--enable-chunked-prefill)
+else
+  cmd+=(--no-enable-chunked-prefill)
 fi
 
 if [ "${VLLM_ASYNC_SCHEDULING:-1}" = "1" ]; then

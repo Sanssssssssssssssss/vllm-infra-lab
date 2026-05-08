@@ -107,6 +107,8 @@ TTFT and ITL require `streaming=true`. If a backend is tested without streaming,
 VLLM_QUANTIZATION=awq_marlin \
 VLLM_GPU_MEMORY_UTILIZATION=0.85 \
 VLLM_MAX_NUM_SEQS=2 \
+VLLM_MAX_NUM_BATCHED_TOKENS=4096 \
+VLLM_ENABLE_CHUNKED_PREFILL=1 \
 VLLM_ENFORCE_EAGER=1 \
 bash ./scripts/start_vllm_qwen3_awq_wsl.sh /mnt/e/GPTProject2/vLLM
 ```

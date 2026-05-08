@@ -48,6 +48,18 @@ This startup-only sweep retained `0.85` as the highest useful
 `gpu_memory_utilization` for AWQ-Marlin on the 8GB GPU. `0.86` and `0.88`
 were OOM-style startup boundaries in this run.
 
+Latest prefill tuning pass:
+
+- `reports/2026-05-08-vllm-awq-marlin-prefill-tuning-waves3.md`
+- `reports/benchmarks/2026-05-08-vllm-awq-marlin-prefill-a-batch2048-chunked-on-waves3.csv`
+- `reports/benchmarks/2026-05-08-vllm-awq-marlin-prefill-b-batch4096-chunked-on-waves3.csv`
+- `reports/benchmarks/2026-05-08-vllm-awq-marlin-prefill-d-batch2048-chunked-off-waves3.csv`
+- `reports/benchmarks/2026-05-08-vllm-awq-marlin-prefill-e-batch4096-chunked-off-waves3.csv`
+
+Decision: keep `max_num_batched_tokens=4096` and chunked prefill enabled for
+the active AWQ-Marlin route. `8192` failed startup on this 8GB GPU, and chunked
+prefill off did not show a clear cross-workload advantage.
+
 ## Experiment Loop
 
 1. Change one parameter family at a time.
