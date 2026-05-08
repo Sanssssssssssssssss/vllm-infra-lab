@@ -16,9 +16,42 @@ total VRAM ~= model weights
 
 The important lesson is that fitting model weights is not enough. For a serving engine, KV cache is the dynamic capacity budget that determines how much context and concurrency the server can sustain.
 
-## Current Baseline Observation
+## Current AWQ-Marlin Baseline Observation
 
-The current `Qwen3-8B-GGUF Q4_K_M + vLLM + WSL` launch has already shown:
+The current active route is `Qwen3-8B-AWQ + awq_marlin + enforce_eager`.
+It changes the memory shape materially:
+
+- Model memory: about `5.71 GiB`
+- Best retained `2048` interactive KV capacity: `4480-4544` GPU KV tokens
+- Best retained `1024` c4 KV capacity: `4416-4544` GPU KV tokens
+- Best retained `4096` long-context KV capacity: `4368-4544` GPU KV tokens
+- `gpu_memory_utilization=0.85` is the highest useful value in the first AWQ sweep
+- `gpu_memory_utilization=0.86` and `0.88` failed with OOM-style startup boundaries
+
+The first AWQ-Marlin startup sweep is recorded in:
+
+- `reports/memory/2026-05-08-vllm-awq-marlin-memory-sweep.md`
+- `reports/memory/2026-05-08-vllm-awq-marlin-memory-sweep.csv`
+- `reports/memory/2026-05-08-vllm-awq-marlin-memory-sweep.jsonl`
+- `reports/memory/2026-05-08-vllm-awq-marlin-candidate-restarts.csv`
+- `reports/memory/2026-05-08-vllm-awq-marlin-candidate-restarts.jsonl`
+
+Retained startup candidates:
+
+| candidate | max_model_len | gpu_util | max_num_seqs | max_num_batched_tokens | GPU KV tokens | role |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `best_interactive_capacity` | 2048 | 0.85 | 2 | 2048 | 4480-4544 | Better c2 interactive KV capacity than the current `batch=4096` baseline. |
+| `best_c4_capacity` | 1024 | 0.85 | 4 | 2048 | 4416-4544 | True c4 capacity at 1024-token target context. |
+| `best_long_context_capacity` | 4096 | 0.85 | 1 | 2048 | 4368-4544 | Single long-context profile; not a concurrent profile. |
+
+The previous request baseline used `max_num_batched_tokens=4096`, which started
+successfully but left less KV cache. In the AWQ sweep, the comparable
+`2048, gpu=0.85, seqs=2, batch=4096` row had only `3056` GPU KV tokens, while
+`batch=2048` had `4480` GPU KV tokens.
+
+## Historical GGUF Observation
+
+The older `Qwen3-8B-GGUF Q4_K_M + vLLM + WSL` launch showed:
 
 - Model memory: about `4.82 GiB`
 - Available KV cache memory: about `1.13 GiB`
@@ -27,7 +60,9 @@ The current `Qwen3-8B-GGUF Q4_K_M + vLLM + WSL` launch has already shown:
 - `gpu_memory_utilization=0.80` starts successfully
 - `gpu_memory_utilization=0.86` failed because free startup VRAM was just below the requested allocation
 
-This makes `gpu_memory_utilization` a capacity knob, not a free performance knob. Higher values can leave too little room for CUDA graphs, workspaces, allocator reserve, and fragmentation.
+This made `gpu_memory_utilization` a capacity knob, not a free performance
+knob. Higher values can leave too little room for CUDA graphs, workspaces,
+allocator reserve, and fragmentation.
 
 ## What vLLM Does At Startup
 
@@ -93,6 +128,31 @@ The runner writes:
 - `reports/memory/YYYY-MM-DD-vllm-gguf-memory-profile.jsonl`
 
 Raw launch logs go under `logs/memory_profile/` and remain ignored by git.
+
+For the current AWQ-Marlin route, pass the vLLM quantization value explicitly:
+
+```bash
+python ./scripts/profile_vllm_memory_sweep.py \
+  --preset stage2 \
+  --confirm-large-sweep \
+  --kill-existing \
+  --max-model-lens 1024,2048,4096 \
+  --gpu-memory-utilizations 0.82,0.84,0.85,0.86,0.88 \
+  --max-num-seqs-values 1,2,4 \
+  --max-num-batched-tokens-values 2048,4096 \
+  --enforce-eager-values true \
+  --model-path /mnt/e/GPTProject2/vLLM/models/Qwen3-8B-AWQ \
+  --tokenizer-path /mnt/e/GPTProject2/vLLM/models/Qwen3-8B-AWQ \
+  --hf-config-path /mnt/e/GPTProject2/vLLM/models/Qwen3-8B-AWQ \
+  --served-model-name Qwen3-8B-AWQ-vLLM-local \
+  --profile qwen3_8b_awq_marlin_eager_vllm \
+  --quantization awq-marlin-int4 \
+  --vllm-quantization awq_marlin \
+  --dtype auto \
+  --output-prefix reports/memory/2026-05-08-vllm-awq-marlin-memory-sweep \
+  --log-dir logs/memory_profile_awq_sweep \
+  --notes awq-marlin-startup-sweep-enforce-eager
+```
 
 ## First Pilot
 

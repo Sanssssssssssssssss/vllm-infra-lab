@@ -36,6 +36,18 @@ This run completed the required four-workload matrix at concurrency `1,2,4,8`
 with `waves=5`. Stability passed, but agent-facing TTFT p95 showed the current
 interactive boundary is closer to concurrency `2`.
 
+Latest AWQ-Marlin startup memory sweep:
+
+- `reports/memory/2026-05-08-vllm-awq-marlin-memory-sweep.md`
+- `reports/memory/2026-05-08-vllm-awq-marlin-memory-sweep.csv`
+- `reports/memory/2026-05-08-vllm-awq-marlin-memory-sweep.jsonl`
+- `reports/memory/2026-05-08-vllm-awq-marlin-candidate-restarts.csv`
+- `reports/memory/2026-05-08-vllm-awq-marlin-candidate-restarts.jsonl`
+
+This startup-only sweep retained `0.85` as the highest useful
+`gpu_memory_utilization` for AWQ-Marlin on the 8GB GPU. `0.86` and `0.88`
+were OOM-style startup boundaries in this run.
+
 ## Experiment Loop
 
 1. Change one parameter family at a time.

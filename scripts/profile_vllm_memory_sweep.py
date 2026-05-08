@@ -261,6 +261,8 @@ def build_command(args: argparse.Namespace, cfg: LaunchConfig) -> list[str]:
         cmd.append("--enable-chunked-prefill")
     if args.async_scheduling_enabled:
         cmd.append("--async-scheduling")
+    if args.vllm_quantization:
+        cmd.extend(["--quantization", args.vllm_quantization])
     if cfg.enforce_eager:
         cmd.append("--enforce-eager")
     return cmd
@@ -538,6 +540,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--served-model-name", default="Qwen3-8B-GGUF-vLLM-local")
     parser.add_argument("--profile", default="qwen3_8b_gguf_vllm_optimized")
     parser.add_argument("--quantization", default="gguf-q4_k_m")
+    parser.add_argument(
+        "--vllm-quantization",
+        default="",
+        help="Optional value passed to vllm serve --quantization, for example awq_marlin.",
+    )
     parser.add_argument("--route", default="WSL")
     parser.add_argument("--venv-dir", default=str(Path.home() / ".venvs" / "gptproject2-vllm"))
     parser.add_argument("--hf-home", default="/mnt/e/GPTProject2/vLLM/hf-cache")
