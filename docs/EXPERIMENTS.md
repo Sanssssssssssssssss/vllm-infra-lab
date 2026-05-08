@@ -8,7 +8,7 @@ The active vLLM optimization baseline is now:
 
 - Backend: `vllm`
 - Route: `WSL`
-- Profile: `qwen3_8b_awq_marlin_eager_vllm`
+- Profile: `qwen3_8b_awq_marlin_graph_vllm`
 - Model: `Qwen3-8B-AWQ-vLLM-local`
 - Quantization: `awq-marlin-int4`
 - `max_model_len=2048`
@@ -19,7 +19,8 @@ The active vLLM optimization baseline is now:
 - Prefix caching: on
 - Chunked prefill: on
 - Async scheduling: on
-- Enforce eager: on
+- Enforce eager: off
+- CUDA graph capture: on
 - Streaming benchmark: on
 
 The previous GGUF baseline remains available through
@@ -59,6 +60,19 @@ Latest prefill tuning pass:
 Decision: keep `max_num_batched_tokens=4096` and chunked prefill enabled for
 the active AWQ-Marlin route. `8192` failed startup on this 8GB GPU, and chunked
 prefill off did not show a clear cross-workload advantage.
+
+Latest eager-vs-graph tuning pass:
+
+- `reports/2026-05-09-vllm-awq-marlin-eager-vs-graph.md`
+- `reports/memory/2026-05-09-vllm-awq-marlin-eager-graph-startup.csv`
+- `reports/benchmarks/2026-05-09-vllm-awq-marlin-eager-graph-a-eager-true-util085-seq2-waves3.csv`
+- `reports/benchmarks/2026-05-09-vllm-awq-marlin-eager-graph-b-graph-util085-seq2-waves3.csv`
+- `reports/benchmarks/2026-05-09-vllm-awq-marlin-eager-graph-d-graph-util085-seq1-waves3.csv`
+
+Decision: switch the active AWQ-Marlin default from eager to CUDA graph mode
+with `max_num_seqs=2`. Graph seq2 improved ITL p95 and output TPS across c1/c2/c4
+with `error_count=0`. Keep `VLLM_ENFORCE_EAGER=1` as a fallback for cold graph
+compile or startup issues.
 
 ## Experiment Loop
 

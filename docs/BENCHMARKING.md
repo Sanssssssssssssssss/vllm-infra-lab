@@ -17,7 +17,7 @@ Default target:
 - Endpoint: `http://127.0.0.1:8000/v1/chat/completions`
 - Model: `Qwen3-8B-AWQ-vLLM-local`
 - Backend: `vllm`
-- Profile: `qwen3_8b_awq_marlin_eager_vllm`
+- Profile: `qwen3_8b_awq_marlin_graph_vllm`
 - Quantization: `awq-marlin-int4`
 - Route: `WSL`
 
@@ -109,7 +109,7 @@ VLLM_GPU_MEMORY_UTILIZATION=0.85 \
 VLLM_MAX_NUM_SEQS=2 \
 VLLM_MAX_NUM_BATCHED_TOKENS=4096 \
 VLLM_ENABLE_CHUNKED_PREFILL=1 \
-VLLM_ENFORCE_EAGER=1 \
+VLLM_ENFORCE_EAGER=0 \
 bash ./scripts/start_vllm_qwen3_awq_wsl.sh /mnt/e/GPTProject2/vLLM
 ```
 
@@ -122,7 +122,7 @@ python ./scripts/bench_openai_async.py \
   --api-key change-this-before-lan-use \
   --model Qwen3-8B-AWQ-vLLM-local \
   --backend vllm \
-  --profile qwen3_8b_awq_marlin_eager_vllm \
+  --profile qwen3_8b_awq_marlin_graph_vllm \
   --quantization awq-marlin-int4 \
   --route WSL \
   --workloads short_chat,long_prefill,long_decode,shared_prefix \
@@ -135,7 +135,6 @@ python ./scripts/bench_openai_async.py \
   --max-num-batched-tokens 4096 \
   --gpu-memory-utilization 0.85 \
   --block-size 16 \
-  --enforce-eager \
   --tokenizer-path /mnt/e/GPTProject2/vLLM/models/Qwen3-8B-AWQ
 ```
 

@@ -38,7 +38,7 @@ max_num_seqs = 2
 max_num_batched_tokens = 4096
 gpu_memory_utilization = 0.85
 block_size = 16
-enforce_eager = true
+enforce_eager = false
 prefix_caching = true
 chunked_prefill = true
 async_scheduling = true
@@ -47,8 +47,13 @@ async_scheduling = true
 The first attempt with plain `awq`, `gpu_memory_utilization=0.80`, and
 `max_num_seqs=8` failed on the 8GB GPU because vLLM reported negative available
 KV cache memory after model load. The working profile switches to `awq_marlin`,
-raises the memory target moderately, caps sequence concurrency, and uses eager
-execution to avoid CUDA graph reserve pressure.
+raises the memory target moderately, and caps sequence concurrency.
+
+The first stable AWQ profile used eager execution to avoid CUDA graph reserve
+pressure. The 2026-05-09 eager-vs-graph pass found CUDA graph mode with
+`max_num_seqs=2` is faster and still stable after graph cache warmup, so graph
+mode is now the active default. Use `VLLM_ENFORCE_EAGER=1` as an explicit
+fallback if cold graph compile causes startup trouble.
 
 ## Claude-Distilled Candidate
 

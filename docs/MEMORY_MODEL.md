@@ -18,7 +18,7 @@ The important lesson is that fitting model weights is not enough. For a serving 
 
 ## Current AWQ-Marlin Baseline Observation
 
-The current active route is `Qwen3-8B-AWQ + awq_marlin + enforce_eager`.
+The current active route is `Qwen3-8B-AWQ + awq_marlin + CUDA graph`.
 It changes the memory shape materially:
 
 - Model memory: about `5.71 GiB`
@@ -27,6 +27,17 @@ It changes the memory shape materially:
 - Best retained `4096` long-context KV capacity: `4368-4544` GPU KV tokens
 - `gpu_memory_utilization=0.85` is the highest useful value in the first AWQ sweep
 - `gpu_memory_utilization=0.86` and `0.88` failed with OOM-style startup boundaries
+
+The follow-up eager-vs-graph pass found graph mode with `max_num_seqs=2` is the
+current runtime winner after graph cache warmup:
+
+- Eager seq2 startup: `3328` GPU KV tokens, no graph capture
+- Graph seq2 retry startup: `3600` GPU KV tokens, graph capture true
+- Graph seq2 request benchmark: lower ITL p95 and higher output TPS than eager
+  across concurrency `1,2,4`
+
+The first graph seq2 attempt timed out during cold compile/cache setup, so eager
+remains an explicit fallback rather than the default.
 
 The first AWQ-Marlin startup sweep is recorded in:
 
