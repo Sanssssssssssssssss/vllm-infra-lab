@@ -145,17 +145,16 @@ Use `--notes` to explain anything unusual, such as a warm server, a changed GPU 
 PagedAttention / APC experiments use a dedicated runner:
 
 ```bash
-python ./scripts/bench_prefix_cache_blocks.py \
-  --request-count 10 \
-  --concurrency 1 \
-  --max-model-len 4096 \
-  --notes stage3-prefix-cache-blocks
+STAGE3_DATE_TAG=2026-05-09 \
+bash ./scripts/run_prefix_cache_stage3_wsl.sh /mnt/e/GPTProject2/vLLM
 ```
 
-It writes:
+The runner starts vLLM with `VLLM_KV_CACHE_METRICS=1`, runs the required cases,
+and writes one CSV/JSONL pair per `block_size` and `prefix_caching_hash_algo`
+variant:
 
-- `reports/benchmarks/YYYY-MM-DD-vllm-prefix-cache-blocks.csv`
-- `reports/benchmarks/YYYY-MM-DD-vllm-prefix-cache-blocks.jsonl`
+- `reports/benchmarks/YYYY-MM-DD-vllm-awq-marlin-prefix-cache-block16-sha256.csv`
+- `reports/benchmarks/YYYY-MM-DD-vllm-awq-marlin-prefix-cache-block16-sha256.jsonl`
 
 The default cases are:
 
@@ -165,7 +164,10 @@ The default cases are:
 | `case_b_shared_system_1024` | 1024 tokens | System-prefix APC. |
 | `case_c_shared_document_2048` | 2048 tokens | Long-document APC. |
 
-This runner records `expected_shared_blocks`, `/metrics` prefix-cache query/hit deltas, and server-side prefill/decode metric deltas when vLLM exposes them. See `docs/PAGED_ATTENTION_PREFIX_CACHE.md` for the full contract.
+This runner records `expected_shared_blocks`, `prefix_caching_hash_algo`,
+`/metrics` prefix-cache query/hit deltas, and server-side prefill/decode metric
+deltas when vLLM exposes them. See `docs/PAGED_ATTENTION_PREFIX_CACHE.md` for
+the full contract.
 
 ## First Recorded Matrix
 

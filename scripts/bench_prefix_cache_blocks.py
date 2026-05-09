@@ -69,6 +69,7 @@ FIELDNAMES = [
     "max_num_batched_tokens",
     "gpu_memory_utilization",
     "block_size",
+    "prefix_caching_hash_algo",
     "prefix_caching_enabled",
     "chunked_prefill_enabled",
     "async_scheduling_enabled",
@@ -579,6 +580,7 @@ def summarize_case(
         "max_num_batched_tokens": args.max_num_batched_tokens,
         "gpu_memory_utilization": args.gpu_memory_utilization,
         "block_size": args.block_size,
+        "prefix_caching_hash_algo": args.prefix_caching_hash_algo,
         "prefix_caching_enabled": bool_text(args.prefix_caching_enabled),
         "chunked_prefill_enabled": bool_text(args.chunked_prefill_enabled),
         "async_scheduling_enabled": bool_text(args.async_scheduling_enabled),
@@ -712,6 +714,10 @@ def build_parser() -> argparse.ArgumentParser:
         default=os.environ.get("VLLM_GPU_MEMORY_UTILIZATION", "0.80"),
     )
     parser.add_argument("--block-size", default=os.environ.get("VLLM_BLOCK_SIZE", "16"))
+    parser.add_argument(
+        "--prefix-caching-hash-algo",
+        default=os.environ.get("VLLM_PREFIX_CACHING_HASH_ALGO", "sha256"),
+    )
     parser.add_argument("--prefix-caching-enabled", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--chunked-prefill-enabled", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--async-scheduling-enabled", action=argparse.BooleanOptionalAction, default=True)

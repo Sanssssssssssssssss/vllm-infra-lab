@@ -33,10 +33,19 @@ python ./scripts/bench_prefix_cache_blocks.py \
   --host 127.0.0.1 \
   --port 8000 \
   --api-key change-this-before-lan-use \
-  --model Qwen3-8B-GGUF-vLLM-local \
+  --model Qwen3-8B-AWQ-vLLM-local \
+  --profile qwen3_8b_awq_marlin_stage3_prefix_blocks_block16_sha256 \
+  --quantization awq-marlin-int4 \
   --request-count 10 \
   --concurrency 1 \
   --max-model-len 4096 \
+  --max-num-seqs 1 \
+  --max-num-batched-tokens 2048 \
+  --gpu-memory-utilization 0.85 \
+  --block-size 16 \
+  --prefix-caching-hash-algo sha256 \
+  --enforce-eager \
+  --tokenizer-path /mnt/e/GPTProject2/vLLM/models/Qwen3-8B-AWQ \
   --notes stage3-prefix-cache-blocks
 ```
 
@@ -73,12 +82,19 @@ This profile defaults to:
 
 ```text
 VLLM_MAX_MODEL_LEN=4096
-VLLM_MAX_NUM_SEQS=2
-VLLM_MAX_NUM_BATCHED_TOKENS=4096
-VLLM_GPU_MEMORY_UTILIZATION=0.80
+VLLM_MAX_NUM_SEQS=1
+VLLM_MAX_NUM_BATCHED_TOKENS=2048
+VLLM_GPU_MEMORY_UTILIZATION=0.85
 VLLM_ENABLE_PREFIX_CACHING=1
 VLLM_BLOCK_SIZE=16
+VLLM_PREFIX_CACHING_HASH_ALGO=sha256
+VLLM_KV_CACHE_METRICS=1
+VLLM_ENFORCE_EAGER=1
 ```
+
+The 4096-token AWQ-Marlin Stage 3 route uses eager mode because it sits on the
+8GB VRAM KV boundary. The interactive 2048-token AWQ route can still use CUDA
+graphs.
 
 Case C has a 2048-token shared document prefix plus chat-template overhead,
 unique question tokens, and 32 output tokens. A server launched with
@@ -124,6 +140,7 @@ Important fields:
 | field | meaning |
 | --- | --- |
 | `expected_shared_blocks` | `shared_prefix_tokens / block_size`, rounded down. |
+| `prefix_caching_hash_algo` | Hash algorithm used by vLLM for prefix cache keys. |
 | `ttft_ms_p50`, `ttft_ms_p95` | Main signal for reduced prefill work. |
 | `e2e_latency_ms_p50`, `e2e_latency_ms_p95` | Should improve when output is short. |
 | `output_tps` | Should stay roughly similar; decode is not the main APC target. |
@@ -146,6 +163,14 @@ Expected result shape:
 - If `prefix_cache_hits_delta` stays at zero for B/C, check that the server was
   launched with `--enable-prefix-caching`, prompts are byte-identical through the
   shared prefix, and `/metrics` is reachable.
+
+Current AWQ-Marlin result:
+
+- `reports/2026-05-09-vllm-awq-marlin-prefix-cache-blocks.md`
+- APC was confirmed active: shared-prefix rows had hit rates near `0.96-0.99`
+  and prefill sum dropped from about `5.0s` to about `0.46-0.51s`.
+- Keep `block_size=16` and `sha256` as the default. Use `xxhash` only for a
+  later high-QPS CPU-hash experiment. It requires the optional `xxhash` package.
 
 Long-decode follow-up:
 

@@ -136,11 +136,8 @@ It isolates Automatic Prefix Caching as a KV block reuse problem.
 Default run:
 
 ```bash
-python ./scripts/bench_prefix_cache_blocks.py \
-  --request-count 10 \
-  --concurrency 1 \
-  --max-model-len 4096 \
-  --notes stage3-prefix-cache-blocks
+STAGE3_DATE_TAG=2026-05-09 \
+bash ./scripts/run_prefix_cache_stage3_wsl.sh /mnt/e/GPTProject2/vLLM
 ```
 
 Required cases:
@@ -157,6 +154,20 @@ and 128 for Case C. Use `prefix_cache_hits_delta`, `prefix_cache_hit_rate`,
 whether APC is actually active. `output_tps` should be treated as a guardrail:
 it should remain roughly stable because prefix caching reduces prefill work, not
 decode work.
+
+Latest AWQ-Marlin Stage 3 pass:
+
+- `reports/2026-05-09-vllm-awq-marlin-prefix-cache-blocks.md`
+- `reports/benchmarks/2026-05-09-vllm-awq-marlin-prefix-cache-block16-sha256.csv`
+- `reports/benchmarks/2026-05-09-vllm-awq-marlin-prefix-cache-block32-sha256.csv`
+- `reports/benchmarks/2026-05-09-vllm-awq-marlin-prefix-cache-block16-xxhash.csv`
+- `reports/benchmarks/2026-05-09-vllm-awq-marlin-prefix-cache-block32-xxhash.csv`
+
+Decision: APC is confirmed active. Shared-prefix cases produced non-zero
+prefix-cache hit deltas, hit rates near `0.96-0.99`, and TTFT p50 around
+`54-61 ms` versus about `486-502 ms` for distinct prompts. Keep
+`block_size=16` and `sha256` as the default; `xxhash` remains a later high-QPS
+CPU-hash experiment.
 
 ### Prefill
 

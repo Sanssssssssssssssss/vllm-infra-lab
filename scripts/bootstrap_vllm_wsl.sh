@@ -17,5 +17,4 @@ rm -rf "${VENV_DIR}"
 python3 -m venv "${VENV_DIR}"
 source "${VENV_DIR}/bin/activate"
 python -m pip install --upgrade pip setuptools wheel
-python -m pip install vllm==0.17.1 openai
-
+python -m pip install vllm==0.17.1 openai xxhash
