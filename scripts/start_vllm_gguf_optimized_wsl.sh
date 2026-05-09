@@ -58,6 +58,10 @@ if [ -n "${VLLM_CHAT_TEMPLATE:-}" ]; then
   cmd+=(--chat-template "${VLLM_CHAT_TEMPLATE}")
 fi
 
+if [ -n "${VLLM_ATTENTION_BACKEND:-}" ]; then
+  cmd+=(--attention-backend "${VLLM_ATTENTION_BACKEND}")
+fi
+
 if [ "${VLLM_TRUST_REMOTE_CODE:-0}" = "1" ]; then
   cmd+=(--trust-remote-code)
 fi

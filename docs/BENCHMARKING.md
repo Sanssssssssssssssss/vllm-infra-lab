@@ -169,6 +169,20 @@ This runner records `expected_shared_blocks`, `prefix_caching_hash_algo`,
 deltas when vLLM exposes them. See `docs/PAGED_ATTENTION_PREFIX_CACHE.md` for
 the full contract.
 
+## Quality Regression
+
+Infrastructure changes that can affect answer quality, such as FP8 KV cache,
+must run the small quality guardrail:
+
+```bash
+KV_DTYPE_DATE_TAG=2026-05-09 \
+bash ./scripts/run_kv_cache_dtype_quality_wsl.sh /mnt/e/GPTProject2/vLLM
+```
+
+It covers Chinese QA, English QA, math/code, long-context summary, and an
+agent tool-use style system prompt. The script writes CSV/JSONL under
+`reports/quality/` and preserves full responses in JSONL for manual inspection.
+
 ## First Recorded Matrix
 
 The first recorded matrix is:

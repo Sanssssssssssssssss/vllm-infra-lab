@@ -39,6 +39,22 @@ current runtime winner after graph cache warmup:
 The first graph seq2 attempt timed out during cold compile/cache setup, so eager
 remains an explicit fallback rather than the default.
 
+The FP8 KV cache pass adds one experimental long-context profile:
+
+```text
+kv_cache_dtype = fp8_e4m3
+attention_backend = TRITON_ATTN
+max_model_len = 4096
+max_num_seqs = 2
+max_num_batched_tokens = 2048
+enforce_eager = true
+```
+
+On this profile, GPU KV tokens increased from `4704` for auto/TRITON to `8512`
+for `fp8_e4m3`/TRITON. This is enough for roughly two 4096-token requests, but
+it is not the default because it requires eager mode and a backend change. See
+`reports/2026-05-09-vllm-awq-marlin-fp8-kv-cache.md`.
+
 The first AWQ-Marlin startup sweep is recorded in:
 
 - `reports/memory/2026-05-08-vllm-awq-marlin-memory-sweep.md`

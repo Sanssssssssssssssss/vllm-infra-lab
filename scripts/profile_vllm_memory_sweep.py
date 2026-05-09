@@ -37,6 +37,8 @@ FIELDNAMES = [
     "gpu_memory_utilization",
     "max_num_seqs",
     "max_num_batched_tokens",
+    "kv_cache_dtype",
+    "attention_backend",
     "enforce_eager",
     "block_size",
     "prefix_caching_enabled",
@@ -90,6 +92,7 @@ class LaunchConfig:
     gpu_memory_utilization: float
     max_num_seqs: int
     max_num_batched_tokens: int
+    kv_cache_dtype: str
     enforce_eager: bool
 
 
@@ -99,6 +102,10 @@ def now_iso() -> str:
 
 def parse_int_csv(raw: str) -> list[int]:
     return [int(item.strip()) for item in raw.split(",") if item.strip()]
+
+
+def parse_csv_list(raw: str) -> list[str]:
+    return [item.strip() for item in raw.split(",") if item.strip()]
 
 
 def parse_float_csv(raw: str) -> list[float]:
@@ -249,12 +256,16 @@ def build_command(args: argparse.Namespace, cfg: LaunchConfig) -> list[str]:
         str(cfg.max_num_seqs),
         "--max-num-batched-tokens",
         str(cfg.max_num_batched_tokens),
+        "--kv-cache-dtype",
+        cfg.kv_cache_dtype,
         "--block-size",
         str(args.block_size),
         "--generation-config",
         args.generation_config,
     ]
 
+    if args.attention_backend:
+        cmd.extend(["--attention-backend", args.attention_backend])
     if args.prefix_caching_enabled:
         cmd.append("--enable-prefix-caching")
     if args.chunked_prefill_enabled:
@@ -372,6 +383,7 @@ def profile_one(
     log_path = log_dir / (
         f"{run_id}-{index:03d}-len{cfg.max_model_len}-gpu{cfg.gpu_memory_utilization:.2f}-"
         f"seq{cfg.max_num_seqs}-batch{cfg.max_num_batched_tokens}-"
+        f"kv{cfg.kv_cache_dtype}-"
         f"eager{str(cfg.enforce_eager).lower()}.log"
     )
 
@@ -439,6 +451,8 @@ def profile_one(
         "gpu_memory_utilization": f"{cfg.gpu_memory_utilization:.2f}",
         "max_num_seqs": cfg.max_num_seqs,
         "max_num_batched_tokens": cfg.max_num_batched_tokens,
+        "kv_cache_dtype": cfg.kv_cache_dtype,
+        "attention_backend": args.attention_backend or "",
         "enforce_eager": bool_text(cfg.enforce_eager),
         "block_size": args.block_size,
         "prefix_caching_enabled": bool_text(args.prefix_caching_enabled),
@@ -492,21 +506,22 @@ def append_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
 
 def pilot_configs() -> list[LaunchConfig]:
     return [
-        LaunchConfig(1024, 0.72, 1, 1024, False),
-        LaunchConfig(2048, 0.80, 8, 4096, False),
-        LaunchConfig(2048, 0.84, 8, 4096, False),
-        LaunchConfig(2048, 0.80, 8, 4096, True),
+        LaunchConfig(1024, 0.72, 1, 1024, "auto", False),
+        LaunchConfig(2048, 0.80, 8, 4096, "auto", False),
+        LaunchConfig(2048, 0.84, 8, 4096, "auto", False),
+        LaunchConfig(2048, 0.80, 8, 4096, "auto", True),
     ]
 
 
 def stage2_configs(args: argparse.Namespace) -> list[LaunchConfig]:
     return [
-        LaunchConfig(max_len, gpu_util, max_seqs, batched_tokens, eager)
-        for max_len, gpu_util, max_seqs, batched_tokens, eager in itertools.product(
+        LaunchConfig(max_len, gpu_util, max_seqs, batched_tokens, kv_dtype, eager)
+        for max_len, gpu_util, max_seqs, batched_tokens, kv_dtype, eager in itertools.product(
             parse_int_csv(args.max_model_lens),
             parse_float_csv(args.gpu_memory_utilizations),
             parse_int_csv(args.max_num_seqs_values),
             parse_int_csv(args.max_num_batched_tokens_values),
+            parse_csv_list(args.kv_cache_dtypes),
             parse_bool_csv(args.enforce_eager_values),
         )
     ]
@@ -520,6 +535,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--gpu-memory-utilizations", default="0.72,0.76,0.80,0.84")
     parser.add_argument("--max-num-seqs-values", default="1,2,4,8")
     parser.add_argument("--max-num-batched-tokens-values", default="1024,2048,4096")
+    parser.add_argument("--kv-cache-dtypes", default="auto")
     parser.add_argument("--enforce-eager-values", default="true,false")
     parser.add_argument("--limit", type=int, default=0)
     parser.add_argument("--output-prefix", type=Path, default=default_output_prefix())
@@ -550,6 +566,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--hf-home", default="/mnt/e/GPTProject2/vLLM/hf-cache")
     parser.add_argument("--dtype", default="half")
     parser.add_argument("--block-size", type=int, default=16)
+    parser.add_argument("--attention-backend", default=os.environ.get("VLLM_ATTENTION_BACKEND", ""))
     parser.add_argument("--generation-config", default="vllm")
     parser.add_argument("--prefix-caching-enabled", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--chunked-prefill-enabled", action=argparse.BooleanOptionalAction, default=True)
@@ -581,7 +598,8 @@ def main() -> int:
         print(
             f"[{index}/{len(configs)}] len={cfg.max_model_len} "
             f"gpu={cfg.gpu_memory_utilization:.2f} seqs={cfg.max_num_seqs} "
-            f"batched={cfg.max_num_batched_tokens} eager={cfg.enforce_eager}",
+            f"batched={cfg.max_num_batched_tokens} kv={cfg.kv_cache_dtype} "
+            f"eager={cfg.enforce_eager}",
             flush=True,
         )
         row = profile_one(

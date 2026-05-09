@@ -55,6 +55,27 @@ pressure. The 2026-05-09 eager-vs-graph pass found CUDA graph mode with
 mode is now the active default. Use `VLLM_ENFORCE_EAGER=1` as an explicit
 fallback if cold graph compile causes startup trouble.
 
+Experimental long-context profile:
+
+```text
+max_model_len = 4096
+max_num_seqs = 2
+max_num_batched_tokens = 2048
+gpu_memory_utilization = 0.85
+kv_cache_dtype = fp8_e4m3
+attention_backend = TRITON_ATTN
+enforce_eager = true
+```
+
+Use:
+
+```bash
+bash ./scripts/start_vllm_qwen3_awq_fp8kv_wsl.sh /mnt/e/GPTProject2/vLLM
+```
+
+This is not the default. It exists for long-context/KV-capacity experiments and
+must be paired with the quality regression set before use in a new workload.
+
 ## Claude-Distilled Candidate
 
 `TheBloke/claude2-alpaca-7B-AWQ` was tested because it is a Claude-style

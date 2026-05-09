@@ -169,6 +169,17 @@ prefix-cache hit deltas, hit rates near `0.96-0.99`, and TTFT p50 around
 `block_size=16` and `sha256` as the default; `xxhash` remains a later high-QPS
 CPU-hash experiment.
 
+Latest FP8 KV cache pass:
+
+- `reports/2026-05-09-vllm-awq-marlin-fp8-kv-cache.md`
+- `reports/memory/2026-05-09-vllm-awq-marlin-kv-dtype-eager4096-triton.csv`
+- `reports/quality/2026-05-09-vllm-awq-marlin-kv-quality-fp8_e4m3-triton_attn.csv`
+
+Decision: add `fp8_e4m3 + TRITON_ATTN + enforce_eager` as an experimental
+4096-token long-context profile. It increased GPU KV tokens from `4704` to
+`8512` versus auto/TRITON and passed the five-case quality guardrail. Do not
+make it the default short-chat profile.
+
 ### Prefill
 
 Vary:
