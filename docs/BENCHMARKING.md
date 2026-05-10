@@ -169,6 +169,46 @@ This runner records `expected_shared_blocks`, `prefix_caching_hash_algo`,
 deltas when vLLM exposes them. See `docs/PAGED_ATTENTION_PREFIX_CACHE.md` for
 the full contract.
 
+## Speculative Decoding
+
+Speculative decoding experiments use a dedicated WSL runner:
+
+```bash
+SPEC_DECODE_DATE_TAG=2026-05-10 \
+bash ./scripts/run_speculative_decoding_wsl.sh /mnt/e/GPTProject2/vLLM
+```
+
+Default scope:
+
+```text
+variants = baseline, baseline_sync, ngram4_sync, ngram8_sync, suffix_sync
+workloads = long_decode
+concurrency = 1, 2, 4
+waves = 3
+```
+
+This runner starts the active AWQ-Marlin CUDA graph profile, adds
+`VLLM_SPECULATIVE_CONFIG` for each speculative variant, captures `/metrics`
+before and after each run, and writes:
+
+- `reports/benchmarks/YYYY-MM-DD-vllm-awq-marlin-specdecode-*-waves3.csv`
+- `reports/benchmarks/YYYY-MM-DD-vllm-awq-marlin-specdecode-*-waves3.jsonl`
+- `reports/benchmarks/YYYY-MM-DD-vllm-awq-marlin-specdecode-metrics.csv`
+- `reports/benchmarks/YYYY-MM-DD-vllm-awq-marlin-specdecode-metrics.jsonl`
+- `reports/metrics/YYYY-MM-DD-vllm-awq-marlin-specdecode-*-before.prom`
+- `reports/metrics/YYYY-MM-DD-vllm-awq-marlin-specdecode-*-after.prom`
+
+Decision rule: keep a speculative profile only if `long_decode` ITL p50/p95
+and E2E p95 improve without increasing `error_count`. `output_tps` and vLLM
+speculative counters (`num_draft_tokens`, `num_accepted_tokens`, acceptance
+rate) are supporting evidence. If ITL does not improve, leave speculative
+decoding off in the default profile.
+
+In vLLM `0.17.1`, n-gram and suffix proposers are not compatible with async
+scheduling. The runner keeps `baseline` as the active-profile control with
+async scheduling on, then uses `baseline_sync` as the fair control for
+`ngram*_sync` and `suffix_sync`.
+
 ## Quality Regression
 
 Infrastructure changes that can affect answer quality, such as FP8 KV cache,

@@ -96,6 +96,10 @@ if [ -n "${VLLM_KV_OFFLOADING_SIZE:-}" ]; then
   cmd+=(--kv-offloading-size "${VLLM_KV_OFFLOADING_SIZE}")
 fi
 
+if [ -n "${VLLM_SPECULATIVE_CONFIG:-}" ]; then
+  cmd+=(--speculative-config "${VLLM_SPECULATIVE_CONFIG}")
+fi
+
 if [ "${VLLM_ENFORCE_EAGER:-0}" = "1" ]; then
   cmd+=(--enforce-eager)
 fi

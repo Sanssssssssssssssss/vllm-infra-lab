@@ -180,6 +180,54 @@ Decision: add `fp8_e4m3 + TRITON_ATTN + enforce_eager` as an experimental
 `8512` versus auto/TRITON and passed the five-case quality guardrail. Do not
 make it the default short-chat profile.
 
+## Stage 4: Speculative Decoding
+
+Use speculative decoding only when it reduces the target model's sequential
+decode pressure in measured traffic. The first pass is intentionally narrow:
+
+```bash
+SPEC_DECODE_DATE_TAG=2026-05-10 \
+bash ./scripts/run_speculative_decoding_wsl.sh /mnt/e/GPTProject2/vLLM
+```
+
+Default variants:
+
+```text
+baseline = no speculative decoding, async scheduling on
+baseline_sync = no speculative decoding, async scheduling off
+ngram4_sync = method ngram, num_speculative_tokens 4, prompt_lookup 1..4, async off
+ngram8_sync = method ngram, num_speculative_tokens 8, prompt_lookup 1..8, async off
+suffix_sync = method suffix, tree depth 8, async off
+```
+
+Primary metric: `long_decode` ITL p50/p95. Secondary metrics:
+accepted/drafted tokens, speculative acceptance rate, `output_tps`, E2E p95,
+and `error_count`. Keep speculative decoding off unless ITL improves clearly
+with `error_count=0`.
+
+vLLM `0.17.1` rejects async scheduling with n-gram and suffix proposers, so
+compare n-gram and suffix against `baseline_sync`, not the async-on default.
+
+Suffix decoding in vLLM `0.17.1` requires `arctic-inference==0.1.1`. If that
+dependency is absent or too heavy to install cleanly, record the startup
+failure as an environment boundary rather than treating the experiment as a
+missing benchmark.
+
+Latest speculative decoding pass:
+
+- `reports/2026-05-10-vllm-awq-marlin-speculative-decoding.md`
+- `reports/benchmarks/2026-05-10-vllm-awq-marlin-specdecode-baseline_sync-waves3.csv`
+- `reports/benchmarks/2026-05-10-vllm-awq-marlin-specdecode-ngram4_sync-waves3.csv`
+- `reports/benchmarks/2026-05-10-vllm-awq-marlin-specdecode-ngram8_sync-waves3.csv`
+- `reports/benchmarks/2026-05-10-vllm-awq-marlin-specdecode-metrics.csv`
+
+Decision: do not enable speculative decoding in the default agent/chat
+profile. `ngram8_sync` delivered a large synthetic repetitive-output speedup
+with `100%` acceptance and `error_count=0`, but long_decode ITL p95 increased
+from about `26 ms` to about `32 ms`, and n-gram requires async scheduling off
+in vLLM `0.17.1`. Keep it as an experimental copy-like/repetitive-output
+profile only. Suffix remains blocked on `arctic-inference==0.1.1`.
+
 ### Prefill
 
 Vary:
